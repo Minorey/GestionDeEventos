@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "994249053524",
+    "project_id": "gestiondeeventos-ef37b",
+    "storage_bucket": "gestiondeeventos-ef37b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994249053524:android:c25203f2c2524c4600e4c1",
+        "android_client_info": {
+          "package_name": "com.example.gestioneventos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUq-2wuZhq1q9xx5BpEWYpA4YrdF8VFBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
