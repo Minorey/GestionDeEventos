@@ -91,7 +91,7 @@ class EventsViewModel @Inject constructor(
 
 
         val dp = IntArray(n)
-        val selected = mutableListOf<Int>()
+        //val n = sortedEvents.size
 
         for (i in 0 until n) {
             val include = sortedEvents[i].priority + if (p[i] != -1) dp[p[i]] else 0
