@@ -43,4 +43,15 @@ class EventsViewModel @Inject constructor(
             if (success) fetchEvents()
         }
     }
+
+    fun toggleCompletion(event: Event) {
+        val updated = event.copy(completed = !event.completed)
+        updateEvent(updated)
+    }
+
+    fun toggleAttendance(event: Event) {
+        val updated = event.copy(attending = !event.attending)
+        updateEvent(updated)
+    }
+
 }

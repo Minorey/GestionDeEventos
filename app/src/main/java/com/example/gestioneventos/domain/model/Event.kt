@@ -7,5 +7,6 @@ data class Event(
     val endTime: Long = 0L,
     val category: String = "",
     val priority: Int = 0,
-    val isCompleted: Boolean = false
+    val completed: Boolean = false,
+    val attending: Boolean = false
 )
