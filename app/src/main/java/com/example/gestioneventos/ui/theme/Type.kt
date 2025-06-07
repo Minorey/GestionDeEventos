@@ -2,11 +2,34 @@ package com.example.gestioneventos.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.gestioneventos.R
 
 // Set of Material typography styles to start with
+val SofiaPro = FontFamily(
+    Font(R.font.sofia_pro_regular, FontWeight.Normal),
+    Font(R.font.sofia_pro_bold, FontWeight.Bold),
+    Font(R.font.sofia_pro_light, FontWeight.Light),
+    Font(R.font.sofia_pro_semi_bold, FontWeight.SemiBold),
+    Font(R.font.sofia_pro_black, FontWeight.Black),
+    Font(R.font.sofia_pro_medium, FontWeight.Medium),
+    Font(R.font.sofia_pro_ultralight, FontWeight.ExtraBold),
+    Font(R.font.sofia_pro_extralight, FontWeight.ExtraLight)
+)
+
+val Pacifico = FontFamily(
+    Font(R.font.pacifico_regular, FontWeight.Normal)
+)
+
+val Rowdies = FontFamily(
+    Font(R.font.rowdies_regular, FontWeight.Normal),
+    Font(R.font.rowdies_light, FontWeight.Light),
+    Font(R.font.rowdies_bold, FontWeight.Bold)
+)
+
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
