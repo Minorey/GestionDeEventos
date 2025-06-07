@@ -70,4 +70,71 @@ class EventsViewModel @Inject constructor(
         updateEvent(updated)
     }
 
+    fun getOptimizedEventSchedule(): List<Event> {
+        val eventList = _events.value ?: return emptyList()
+
+
+        val sortedEvents = eventList.sortedBy { it.endTime }
+
+
+        val n = sortedEvents.size
+        val p = IntArray(n) { -1 }
+
+        for (i in 1 until n) {
+            for (j in i - 1 downTo 0) {
+                if (sortedEvents[j].endTime <= sortedEvents[i].startTime) {
+                    p[i] = j
+                    break
+                }
+            }
+        }
+
+
+        val dp = IntArray(n)
+        val selected = mutableListOf<Int>()
+
+        for (i in 0 until n) {
+            val include = sortedEvents[i].priority + if (p[i] != -1) dp[p[i]] else 0
+            val exclude = if (i > 0) dp[i - 1] else 0
+
+            dp[i] = maxOf(include, exclude)
+        }
+
+
+        fun findSolution(i: Int): List<Int> {
+            if (i < 0) return emptyList()
+            val include = sortedEvents[i].priority + if (p[i] != -1) dp[p[i]] else 0
+            val exclude = if (i > 0) dp[i - 1] else 0
+
+            return if (include > exclude) {
+                listOf(i) + if (p[i] != -1) findSolution(p[i]) else emptyList()
+            } else {
+                findSolution(i - 1)
+            }
+        }
+
+        val selectedIndices = findSolution(n - 1)
+        return selectedIndices.map { sortedEvents[it] }
+    }
+
+    fun getGreedyOptimizedEvents(): List<Event> {
+        val events = _events.value ?: return emptyList()
+
+        // Ordenar por hora de finalización
+        val sorted = events.sortedWith(compareBy<Event> { it.endTime }.thenByDescending { it.priority })
+
+        val selected = mutableListOf<Event>()
+        var lastEndTime = 0L
+
+        for (event in sorted) {
+            if (event.startTime >= lastEndTime) {
+                selected.add(event)
+                lastEndTime = event.endTime
+            }
+        }
+
+        return selected
+    }
+
+
 }

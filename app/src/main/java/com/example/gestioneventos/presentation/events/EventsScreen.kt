@@ -14,9 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -46,8 +49,16 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("Todos") }
 
-    val filteredEvents = allEvents.filter {
+    val optimizedEvents by remember(allEvents) { derivedStateOf { viewModel.getOptimizedEventSchedule() } }
+
+    val visibleEvents = when (selectedFilter) {
+        "Optimizado" -> optimizedEvents
+        else -> allEvents
+    }
+
+    val filteredEvents = visibleEvents.filter {
         it.title.contains(searchQuery, ignoreCase = true) ||
                 it.category.contains(searchQuery, ignoreCase = true)
     }
@@ -64,9 +75,11 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier
-            .padding(paddingValues)
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
 
 
             OutlinedTextField(
@@ -78,6 +91,21 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                listOf("Todos", "Optimizado").forEach { filter ->
+                    FilterChip(
+                        selected = selectedFilter == filter,
+                        onClick = { selectedFilter = filter },
+                        label = { Text(filter) }
+                    )
+                }
+            }
+
             LazyColumn {
                 items(filteredEvents) { event ->
                     Card(
@@ -87,28 +115,37 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
                             .clickable {
                                 selectedEvent = event
                                 showDialog = true
-                            }.alpha(if (event.completed) 0.5f else 1f),
+                            }
+                            .alpha(if (event.completed) 0.5f else 1f),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Column(Modifier.padding(16.dp)) {
-                            val textDecoration = if (event.completed) TextDecoration.LineThrough else TextDecoration.None
-                            Text("Título: ${event.title}", style = MaterialTheme.typography.titleMedium.copy(
-                                textDecoration = textDecoration
-                            ))
+                            val textDecoration =
+                                if (event.completed) TextDecoration.LineThrough else TextDecoration.None
+                            Text(
+                                "Título: ${event.title}",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    textDecoration = textDecoration
+                                )
+                            )
                             Text("Categoría: ${event.category}")
                             Text("Inicio: ${formatEpochTime(event.startTime)}")
                             Text("Fin: ${formatEpochTime(event.endTime)}")
 
                             val priorityColor = when (event.priority) {
-                                0 -> Color.Gray
-                                1 -> Color(0xFFFFA000)
-                                else -> Color.Red
+                                0 -> Color.Gray //baja
+                                1 -> Color(0xFFFFA000) //media
+                                else -> Color.Red //altas
                             }
-                            Text("Prioridad: ${when (event.priority) {
-                                0 -> "Baja"
-                                1 -> "Media"
-                                else -> "Alta"
-                            }}", color = priorityColor, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Prioridad: ${
+                                    when (event.priority) {
+                                        0 -> "Baja"
+                                        1 -> "Media"
+                                        else -> "Alta"
+                                    }
+                                }", color = priorityColor, fontWeight = FontWeight.Bold
+                            )
 
 
 

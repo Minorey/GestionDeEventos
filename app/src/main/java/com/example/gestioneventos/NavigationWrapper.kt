@@ -34,7 +34,7 @@ fun NavigationWrapper(
                 modifier = modifier,
                 viewModel = viewModel,
                 onLoginSuccess = { navHostController.navigate("events") },
-                onNavigateToRegister = { navHostController.navigate("register") }
+                onNavigateToRegister = { navHostController.navigate("signUp") }
             )
         }
         composable("signUp") {
