@@ -9,7 +9,7 @@ Aplicación Android desarrollada con **Kotlin + Jetpack Compose**, que permite a
 - ✅ Registro y visualización de eventos por usuario
 - ✅ Filtro de búsqueda por título y categoría
 - ✅ Selección de prioridad y categoría
-- ✅ Algoritmo de optimización (Greedy y DP disponibles)
+- ✅ Algoritmo de optimización
 - ✅ Firebase Authentication + Firestore
 - ✅ Almacenamiento seguro con Hilt + MVVM
 - ✅ UI moderna con Jetpack Compose
