@@ -1,4 +1,6 @@
 package com.example.gestioneventos.data.remote.model
 
-class Category {
-}
+data class Category (
+    val id: Int,
+    val name: String
+)

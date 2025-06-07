@@ -57,7 +57,7 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                selectedEvent = null // crear nuevo
+                selectedEvent = null
                 showDialog = true
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar evento")
@@ -68,7 +68,7 @@ fun EventsScreen(modifier: Modifier, viewModel: EventsViewModel) {
             .padding(paddingValues)
             .padding(16.dp)) {
 
-            // Búsqueda
+
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },

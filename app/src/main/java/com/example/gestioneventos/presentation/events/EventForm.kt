@@ -10,6 +10,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +20,7 @@ import com.example.gestioneventos.domain.model.Event
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventForm(
     viewModel: EventsViewModel,
@@ -26,21 +28,25 @@ fun EventForm(
     onSave: () -> Unit
 ) {
     val context = LocalContext.current
-    val scroll = rememberScrollState()
+    val categories by viewModel.categories.observeAsState(emptyList())
+    val priorities by viewModel.priorities.observeAsState(emptyList())
 
     var title by remember { mutableStateOf(editingEvent?.title ?: "") }
     var category by remember { mutableStateOf(editingEvent?.category ?: "") }
+    var priorityId by remember { mutableStateOf(editingEvent?.priority ?: 0) }
+
+    var expandedCategory by remember { mutableStateOf(false) }
+    var expandedPriority by remember { mutableStateOf(false) }
 
     var startTimeMillis by remember { mutableStateOf(editingEvent?.startTime ?: 0L) }
     var endTimeMillis by remember { mutableStateOf(editingEvent?.endTime ?: 0L) }
 
-    var priority by remember { mutableStateOf(editingEvent?.priority ?: 0) }
-
     val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+
+    val scroll = rememberScrollState()
 
     fun pickStartDateTime(onResult: (Long) -> Unit) {
         val calendar = Calendar.getInstance()
-
         DatePickerDialog(
             context,
             { _, year, month, day ->
@@ -69,7 +75,6 @@ fun EventForm(
     fun pickEndDateTime(minStartTime: Long, onResult: (Long) -> Unit) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = minStartTime + 1 * 60 * 1000 // como mínimo 1 min después
-
         DatePickerDialog(
             context,
             { _, year, month, day ->
@@ -82,12 +87,15 @@ fun EventForm(
                     { _, hour, minute ->
                         calendar.set(Calendar.HOUR_OF_DAY, hour)
                         calendar.set(Calendar.MINUTE, minute)
-
                         val selected = calendar.timeInMillis
                         if (selected > minStartTime) {
                             onResult(selected)
                         } else {
-                            Toast.makeText(context, "La hora de fin debe ser mayor a la de inicio", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "La hora de fin debe ser mayor a la de inicio",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
@@ -101,11 +109,10 @@ fun EventForm(
         ).show()
     }
 
-
     Column(
-        Modifier
+        modifier = Modifier
             .verticalScroll(scroll)
-            .padding(8.dp)
+            .padding(16.dp)
     ) {
         OutlinedTextField(
             value = title,
@@ -116,12 +123,71 @@ fun EventForm(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = category,
-            onValueChange = { category = it },
-            label = { Text("Categoría") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        ExposedDropdownMenuBox(
+            expanded = expandedCategory,
+            onExpandedChange = { expandedCategory = !expandedCategory }
+        ) {
+            OutlinedTextField(
+                value = category,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Categoría") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedCategory,
+                onDismissRequest = { expandedCategory = false }
+            ) {
+                categories.forEach {
+                    DropdownMenuItem(
+                        text = { Text(it.name) },
+                        onClick = {
+                            category = it.name
+                            expandedCategory = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ExposedDropdownMenuBox(
+            expanded = expandedPriority,
+            onExpandedChange = { expandedPriority = !expandedPriority }
+        ) {
+            val selectedLabel =
+                priorities.find { it.id == priorityId }?.name ?: "Selecciona prioridad"
+            OutlinedTextField(
+                value = selectedLabel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Prioridad") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPriority) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expandedPriority,
+                onDismissRequest = { expandedPriority = false }
+            ) {
+                priorities.forEach {
+                    DropdownMenuItem(
+                        text = { Text(it.name) },
+                        onClick = {
+                            priorityId = it.id
+                            expandedPriority = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -144,40 +210,22 @@ fun EventForm(
             label = { Text("Fin") },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { if (startTimeMillis == 0L) {
-                    Toast.makeText(context, "Primero selecciona la hora de inicio", Toast.LENGTH_SHORT).show()
-                } else {
-                    pickEndDateTime(startTimeMillis) { endTimeMillis = it }
-                } },
+                .clickable {
+                    if (startTimeMillis == 0L) {
+                        Toast
+                            .makeText(
+                                context,
+                                "Primero selecciona la hora de inicio",
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
+                    } else {
+                        pickEndDateTime(startTimeMillis) { endTimeMillis = it }
+                    }
+                },
             enabled = false,
             readOnly = true
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Prioridad", style = MaterialTheme.typography.titleMedium)
-        val priorities = listOf("Baja" to 0, "Media" to 1, "Alta" to 2)
-        Column {
-            priorities.forEach { (label, value) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = priority == value,
-                            onClick = { priority = value },
-                            role = Role.RadioButton
-                        )
-                        .padding(vertical = 4.dp)
-                ) {
-                    RadioButton(
-                        selected = priority == value,
-                        onClick = { priority = value }
-                    )
-                    Text(label)
-                }
-            }
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -185,7 +233,8 @@ fun EventForm(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 if (title.isBlank() || category.isBlank() || startTimeMillis == 0L || endTimeMillis == 0L) {
-                    Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT)
+                        .show()
                     return@Button
                 }
 
@@ -195,7 +244,7 @@ fun EventForm(
                     category = category,
                     startTime = startTimeMillis,
                     endTime = endTimeMillis,
-                    priority = priority,
+                    priority = priorityId,
                     completed = editingEvent?.completed ?: false,
                     attending = editingEvent?.attending ?: false
                 )
@@ -210,3 +259,4 @@ fun EventForm(
         }
     }
 }
+
